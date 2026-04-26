@@ -14,8 +14,9 @@ export async function POST(req: NextRequest) {
     id:          "P" + Date.now() + Math.random().toString(36).slice(2),
     code:        String(r.code        || "").trim(),
     description: String(r.description || "").trim().toUpperCase(),
-    cost:        Number(r.cost)  || 0,
-    price:       Number(r.price) || 0,
+    wholesale_price: Number(r.wholesale_price) || 0,
+    retail_price:    Number(r.retail_price)    || 0,
+    cost_price:      Number(r.cost_price)      || 0,
     category:    String(r.category || "Outros").trim(),
     colors:      r.colors
       ? String(r.colors).split(/[,;]/).map((c: string) => c.trim().toLowerCase()).filter(Boolean)

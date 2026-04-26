@@ -18,8 +18,9 @@ export async function POST(req: NextRequest) {
     if (!code) continue;
 
     const updates: Record<string, number> = {};
-    if (r.cost  !== undefined && !isNaN(Number(r.cost)))  updates.cost  = Number(r.cost);
-    if (r.price !== undefined && !isNaN(Number(r.price))) updates.price = Number(r.price);
+    if (r.wholesale_price !== undefined && !isNaN(Number(r.wholesale_price))) updates.wholesale_price = Number(r.wholesale_price);
+    if (r.retail_price    !== undefined && !isNaN(Number(r.retail_price)))    updates.retail_price    = Number(r.retail_price);
+    if (r.cost_price      !== undefined && !isNaN(Number(r.cost_price)))      updates.cost_price      = Number(r.cost_price);
     if (!Object.keys(updates).length) continue;
 
     const { error } = await supabase

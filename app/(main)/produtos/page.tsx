@@ -19,7 +19,7 @@ export default function ProdutosPage() {
   const [loading,   setLoading]   = useState(true);
   const [showForm,  setShowForm]  = useState(false);
   const [editing,   setEditing]   = useState<Product | null>(null);
-  const [sortBy,    setSortBy]    = useState<"desc" | "code" | "price" | "margin">("desc");
+  const [sortBy,    setSortBy]    = useState<"desc" | "code" | "retail_price" | "margin">("desc");
   const [sortAsc,   setSortAsc]   = useState(true);
 
   const load = useCallback(async () => {
@@ -47,10 +47,10 @@ export default function ProdutosPage() {
     })
     .sort((a, b) => {
       let cmp = 0;
-      if (sortBy === "code")   cmp = a.code.localeCompare(b.code);
-      if (sortBy === "price")  cmp = a.price - b.price;
-      if (sortBy === "margin") cmp = (a.price - a.cost) - (b.price - b.cost);
-      if (sortBy === "desc")   cmp = a.description.localeCompare(b.description);
+      if (sortBy === "code")         cmp = a.code.localeCompare(b.code);
+      if (sortBy === "retail_price") cmp = a.retail_price - b.retail_price;
+      if (sortBy === "margin")       cmp = (a.retail_price - a.wholesale_price) - (b.retail_price - b.wholesale_price);
+      if (sortBy === "desc")         cmp = a.description.localeCompare(b.description);
       return sortAsc ? cmp : -cmp;
     });
 
@@ -82,7 +82,7 @@ export default function ProdutosPage() {
   // Summary stats
   const totalProducts = products.length;
   const avgMargin     = products.length
-    ? products.reduce((s, p) => s + (p.price > 0 ? (p.price - p.cost) / p.price * 100 : 0), 0) / products.length
+    ? products.reduce((s, p) => s + (p.retail_price > 0 ? (p.retail_price - p.wholesale_price) / p.retail_price * 100 : 0), 0) / products.length
     : 0;
   const withColors    = products.filter((p) => p.colors && p.colors.length > 0).length;
 
@@ -174,8 +174,8 @@ export default function ProdutosPage() {
                 <SortTh col="code" label="Código" />
                 <SortTh col="desc" label="Descrição" />
                 <th>Categoria</th>
-                <th>Fábrica</th>
-                <SortTh col="price" label="Venda" />
+                <th>Atacado</th>
+                <SortTh col="retail_price" label="Varejo" />
                 <SortTh col="margin" label="Margem" />
                 <th>Cores</th>
                 <th></th>
@@ -189,15 +189,15 @@ export default function ProdutosPage() {
                   </td>
                 </tr>
               ) : filtered.map((p) => {
-                const marginVal = p.price - p.cost;
-                const marginPct = p.price > 0 ? ((marginVal / p.price) * 100).toFixed(1) : "0.0";
+                const marginVal = p.retail_price - p.wholesale_price;
+                const marginPct = p.retail_price > 0 ? ((marginVal / p.retail_price) * 100).toFixed(1) : "0.0";
                 return (
                   <tr key={p.id}>
                     <td><span className="badge bb">{p.code}</span></td>
                     <td style={{ fontWeight: 600, maxWidth: 260 }}>{p.description}</td>
                     <td><span className="badge bg">{p.category || "—"}</span></td>
-                    <td style={{ color: "var(--gray-600)" }}>{fmtCurrency(p.cost)}</td>
-                    <td style={{ fontWeight: 700 }}>{fmtCurrency(p.price)}</td>
+                    <td style={{ color: "var(--gray-600)" }}>{fmtCurrency(p.wholesale_price)}</td>
+                    <td style={{ fontWeight: 700 }}>{fmtCurrency(p.retail_price)}</td>
                     <td>
                       <span style={{ color: marginVal >= 0 ? "var(--success)" : "var(--red)", fontWeight: 700 }}>
                         {fmtCurrency(marginVal)}
@@ -270,15 +270,16 @@ function ProductForm({ product, onSave, onClose }: {
   const [code,     setCode]     = useState(product?.code        || "");
   const [desc,     setDesc]     = useState(product?.description || "");
   const [category, setCategory] = useState(product?.category    || PRODUCT_CATEGORIES[0]);
-  const [cost,     setCost]     = useState(product?.cost        ?? 0);
-  const [price,    setPrice]    = useState(product?.price       ?? 0);
-  const [colors,   setColors]   = useState<string[]>(product?.colors || []);
+  const [wholesale, setWholesale] = useState(product?.wholesale_price ?? 0);
+  const [retail,    setRetail]    = useState(product?.retail_price    ?? 0);
+  const [costPrice, setCostPrice] = useState(product?.cost_price      ?? 0);
+  const [colors,    setColors]    = useState<string[]>(product?.colors || []);
 
   const toggleColor = (c: string) =>
     setColors((prev) => prev.includes(c) ? prev.filter((x) => x !== c) : [...prev, c]);
 
-  const marginVal = price - cost;
-  const marginPct = price > 0 ? ((marginVal / price) * 100).toFixed(1) : "0.0";
+  const marginVal = retail - wholesale;
+  const marginPct = retail > 0 ? ((marginVal / retail) * 100).toFixed(1) : "0.0";
 
   return (
     <div className="modal-overlay open">
@@ -306,33 +307,48 @@ function ProductForm({ product, onSave, onClose }: {
           </div>
           <div className="ir2">
             <div className="fg">
-              <label className="fl">Preço Fábrica (R$)</label>
+              <label className="fl">Preço de Custo (R$)</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 className="fc"
-                value={cost}
-                onChange={(e) => setCost(Number(e.target.value))}
+                value={costPrice}
+                onChange={(e) => setCostPrice(Number(e.target.value))}
+                placeholder="0,00"
               />
             </div>
             <div className="fg">
-              <label className="fl">Preço Venda (R$)</label>
+              <label className="fl">Preço de Atacado (R$)</label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 className="fc"
-                value={price}
-                onChange={(e) => setPrice(Number(e.target.value))}
+                value={wholesale}
+                onChange={(e) => setWholesale(Number(e.target.value))}
               />
             </div>
           </div>
+          <div className="ir2">
+            <div className="fg">
+              <label className="fl">Preço de Varejo (R$)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                className="fc"
+                value={retail}
+                onChange={(e) => setRetail(Number(e.target.value))}
+              />
+            </div>
+            <div className="fg" />
+          </div>
 
           {/* Margin preview */}
-          {price > 0 && (
+          {retail > 0 && (
             <div className={`alert ${marginVal >= 0 ? "alert-s" : "alert-d"}`} style={{ marginBottom: 14 }}>
-              Margem: <strong>{fmtCurrency(marginVal)}</strong> ({marginPct}%)
+              Margem Atacado→Varejo: <strong>{fmtCurrency(marginVal)}</strong> ({marginPct}%)
             </div>
           )}
 
@@ -370,7 +386,7 @@ function ProductForm({ product, onSave, onClose }: {
           <button className="btn btn-outline" onClick={onClose}>Cancelar</button>
           <button
             className="btn btn-red"
-            onClick={() => onSave({ code, description: desc, category, cost, price, colors })}
+            onClick={() => onSave({ code, description: desc, category, wholesale_price: wholesale, retail_price: retail, cost_price: costPrice, colors })}
           >
             Salvar
           </button>

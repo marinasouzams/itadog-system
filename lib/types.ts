@@ -19,8 +19,9 @@ export interface Product {
   id: string;
   code: string;
   description: string;
-  cost: number;
-  price: number;
+  wholesale_price: number;   // Preço de Atacado (antigo cost)
+  retail_price: number;      // Preço de Varejo (antigo price)
+  cost_price: number;        // Preço de Custo de fabricação
   category: string;
   colors: string[];
   created_at?: string;
@@ -135,15 +136,17 @@ export interface ImportProductRow {
   code: string;
   description: string;
   category?: string;
-  cost: number;
-  price: number;
+  wholesale_price: number;
+  retail_price: number;
+  cost_price?: number;
   colors?: string;
 }
 
 export interface ImportPricingRow {
   code: string;
-  cost?: number;
-  price?: number;
+  wholesale_price?: number;
+  retail_price?: number;
+  cost_price?: number;
 }
 
 // ─── Resposta padrão da API ───

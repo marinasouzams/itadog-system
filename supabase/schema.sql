@@ -22,14 +22,15 @@ CREATE TABLE IF NOT EXISTS clients (
 
 -- ─── PRODUTOS ───────────────────────────────────
 CREATE TABLE IF NOT EXISTS products (
-  id         TEXT PRIMARY KEY DEFAULT 'P' || extract(epoch from now())::TEXT,
-  code       TEXT NOT NULL,
-  description TEXT NOT NULL,
-  cost       DECIMAL(10,2) NOT NULL DEFAULT 0,
-  price      DECIMAL(10,2) NOT NULL DEFAULT 0,
-  category   TEXT DEFAULT 'Outros',
-  colors     TEXT[] DEFAULT '{}',
-  created_at TIMESTAMPTZ DEFAULT NOW()
+  id              TEXT PRIMARY KEY DEFAULT 'P' || extract(epoch from now())::TEXT,
+  code            TEXT NOT NULL,
+  description     TEXT NOT NULL,
+  cost_price      DECIMAL(10,2) NOT NULL DEFAULT 0,   -- Preço de Custo (fabricação)
+  wholesale_price DECIMAL(10,2) NOT NULL DEFAULT 0,   -- Preço de Atacado
+  retail_price    DECIMAL(10,2) NOT NULL DEFAULT 0,   -- Preço de Varejo
+  category        TEXT DEFAULT 'Outros',
+  colors          TEXT[] DEFAULT '{}',
+  created_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ─── PEDIDOS ────────────────────────────────────

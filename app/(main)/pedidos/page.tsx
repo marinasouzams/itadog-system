@@ -62,8 +62,8 @@ export default function PedidosPage() {
     const newItem: OrderItem = {
       product_id:  selectedProd.id,
       description: selectedProd.description,
-      cost:        selectedProd.cost,
-      price:       selectedProd.price,
+      cost:        selectedProd.wholesale_price,
+      price:       selectedProd.retail_price,
       qty:         pdQty,
       discount:    pdDisc,
       colors:      pdColors,
@@ -240,8 +240,8 @@ export default function PedidosPage() {
               >
                 <div className="pi-code">{p.code}</div>
                 <div className="pi-desc">{p.description}</div>
-                <div className="pi-price">{fmtCurrency(p.price)}</div>
-                <div className="pi-cost">Fáb: {fmtCurrency(p.cost)}</div>
+                <div className="pi-price">{fmtCurrency(p.retail_price)}</div>
+                <div className="pi-cost">Atac: {fmtCurrency(p.wholesale_price)}</div>
               </div>
             ))}
             {filteredProds.length === 0 && (
@@ -258,9 +258,9 @@ export default function PedidosPage() {
                 {selectedProd.description}
               </div>
               <div style={{ fontSize: 12, color: "var(--gray-600)", marginBottom: 10 }}>
-                Fábrica: <strong>{fmtCurrency(selectedProd.cost)}</strong>
-                &nbsp;|&nbsp; Venda: <strong>{fmtCurrency(selectedProd.price)}</strong>
-                &nbsp;|&nbsp; Margem: <strong style={{ color: "var(--success)" }}>{fmtCurrency(selectedProd.price - selectedProd.cost)}</strong>
+                Atacado: <strong>{fmtCurrency(selectedProd.wholesale_price)}</strong>
+                &nbsp;|&nbsp; Varejo: <strong>{fmtCurrency(selectedProd.retail_price)}</strong>
+                &nbsp;|&nbsp; Margem: <strong style={{ color: "var(--success)" }}>{fmtCurrency(selectedProd.retail_price - selectedProd.wholesale_price)}</strong>
               </div>
               <div className="ir3" style={{ marginBottom: 10 }}>
                 <div className="fg" style={{ margin: 0 }}>
@@ -277,7 +277,7 @@ export default function PedidosPage() {
                     type="text"
                     className="fc"
                     readOnly
-                    value={fmtCurrency(selectedProd.price * pdQty - pdDisc)}
+                    value={fmtCurrency(selectedProd.retail_price * pdQty - pdDisc)}
                     style={{ background: "var(--gray-50)", fontWeight: 700, color: "var(--blue)" }}
                   />
                 </div>
